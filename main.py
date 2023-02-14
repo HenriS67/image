@@ -27,15 +27,29 @@ class Pixel:
         return (r + g + b)/3
 
 class Image:
-    def __init__(self, pixels):
-        self.pixels = pixels
-        self.height=len(pixels)
-        self.width=len(pixels[0])
+    def __init__(self, img):
+
+        n=len(img)
+        p=len(img[0])
+        self.pixels=[[Pixel(0,0,0) for j in range (p)] for i in range(n)]
+        for i in range(n):
+            for j in range(p):
+                px = img[i][j]
+                if(type(px)==type(1)):
+                    self.pixels[i][j]=Pixel(px,px,px)
+                else:
+                    r= px[0]
+                    g= px[1]
+                    b= px[2]
+                    self.pixels[i][j]=Pixel(r,g,b)
+
+        self.height=len(self.pixels)
+        self.width=len(self.pixels[0])
 
         self.grey = [[ 0 for j in range (self.width)] for i in range(self.height)]
         for i in range (self.height):
             for j in range(self.width):
-                self.grey[i][j]=(pixels[i][j].r + pixels[i][j].g + pixels[i][j].b)/3
+                self.grey[i][j]=(self.pixels[i][j].r + self.pixels[i][j].g + self.pixels[i][j].b)/3
 
     def __str__(self):
         str = ""
@@ -45,6 +59,7 @@ class Image:
             for j in range(self.width):
                 hist[int(self.grey[i][j])]+=1
         return hist
+
 #contour
 def contour(Img):
     P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
@@ -171,27 +186,18 @@ def binarisationOtsu(Img):
                 P[i][j]=0
     return P
 
+#main
 img=imageio.imread("image.jpg").tolist()
-n=len(img)
-p=len(img[0])
-image=[[Pixel(0,0,0) for j in range (p)] for i in range(n)]
-for i in range(n):
-    for j in range(p):
-        px = img[i][j]
-        if(type(px)==type(1)):
-            image[i][j]=Pixel(px,px,px)
-        else:
-            r= px[0]
-            g= px[1]
-            b= px[2]
-            image[i][j]=Pixel(r,g,b)
 
-Img=Image(image)
+
+Img=Image(img)
 
 print(Img.pixels[Img.height-1][Img.width-1])
   
-#border=contourSobel(Img)
+
 mask=binarisationOtsu(Img)
+bwImg=Image(mask)
+border=contourSobel(bwImg)
 plt.figure()
-plt.imshow(mask,cmap='gray')
+plt.imshow(border,cmap='gray')
 plt.show()
