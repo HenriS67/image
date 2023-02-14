@@ -1,0 +1,4 @@
+Segmentation :
+
+binarisation : méthode d'oTSU
+Contours : filtre de Sobel/canny
