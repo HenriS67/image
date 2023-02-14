@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import imageio
-
+from numpy import linalg as LA
 class Pixel:
     def __init__(self, r, g, b):
         self.r = r
@@ -40,6 +40,7 @@ class Image:
     def __str__(self):
         str = ""
 
+#contour
 def contour(Img):
     P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
     for i in range (1,Img.height-1):
@@ -47,6 +48,67 @@ def contour(Img):
             P[i][j] = abs(Img.grey[i+1][j] - Img.grey[i-1][j]) + abs(Img.grey[i][j+1] - Img.grey[i][j-1])
     return P
 
+def contourPrewitt(Img):
+    P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
+    for i in range (1,Img.height-1):
+        for j in range(1,Img.width-1):
+            A = np.array(
+                [
+                 [Img.grey[i-1][j-1],Img.grey[i-1][j],Img.grey[i-1][j+1]],
+                 [Img.grey[i][j-1],Img.grey[i][j],Img.grey[i][j+1]],
+                 [Img.grey[i+1][j-1],Img.grey[i+1][j],Img.grey[i+1][j+1]]
+                 ]) 
+
+            Kgx = np.array([[-1,0,1],[-1,0,1],[-1,0,1]])
+            Kgy = np.array([[-1,-1,-1],[0,0,0],[1,1,1]])
+
+            Gx = Kgx.dot(A)
+            Gy = Kgy.dot(A)
+
+            P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
+    return P
+
+def contourSobel(Img):
+    P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
+    for i in range (1,Img.height-1):
+        for j in range(1,Img.width-1):
+            A = np.array(
+                [
+                 [Img.grey[i-1][j-1],Img.grey[i-1][j],Img.grey[i-1][j+1]],
+                 [Img.grey[i][j-1],Img.grey[i][j],Img.grey[i][j+1]],
+                 [Img.grey[i+1][j-1],Img.grey[i+1][j],Img.grey[i+1][j+1]]
+                 ]) 
+
+            Kgx = np.array([[-1,0,1],[-2,0,2],[-1,0,1]])
+            Kgy = np.array([[-1,-2,-1],[0,0,0],[1,2,1]])
+
+            Gx = Kgx.dot(A)
+            Gy = Kgy.dot(A)
+
+            P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
+    return P
+
+def contourCanny(self):
+    P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
+    for i in range (1,Img.height-1):
+        for j in range(1,Img.width-1):
+            A = np.array(
+                [
+                 [Img.grey[i-1][j-1],Img.grey[i-1][j],Img.grey[i-1][j+1]],
+                 [Img.grey[i][j-1],Img.grey[i][j],Img.grey[i][j+1]],
+                 [Img.grey[i+1][j-1],Img.grey[i+1][j],Img.grey[i+1][j+1]]
+                 ]) 
+
+            Kgx = np.array([[-1,0,1],[-2,0,2],[-1,0,1]])
+            Kgy = np.array([[-1,-2,-1],[0,0,0],[1,2,1]])
+
+            Gx = Kgx.dot(A)
+            Gy = Kgy.dot(A)
+
+            P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
+    return P
+    
+#binarisation
 def binarisation(Img):
     P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
     for i in range (1,Img.height-1):
@@ -57,41 +119,28 @@ def binarisation(Img):
                 P[i][j]=255
     return P
 
-def contourSobel(Img):
-    P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
-    return P
 
-def contourPrewitt(Img):
-    P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
-    for i in range (1,Img.height-1):
-        for j in range(1,Img.width-1):
-            A = np.array([[1,2,0],[4,3,-1],[4,3,-1]]) 
-            Kgx = np.array([[1,2,0],[4,3,-1],[4,3,-1]])
-            Kgy = np.array([[1,2,0],[4,3,-1],[4,3,-1]])
-
-            Gx = Kgx.dot(A)
-            Gy = Kgy.dot(A)
-
-            P[i][j] = np.norm(Gx.dot(Gx) + Gy.dot(Gy))
-    return P
-
-img=imageio.imread("image.jpg").tolist()
+img=imageio.imread("Gourds.png").tolist()
 n=len(img)
 p=len(img[0])
 image=[[Pixel(0,0,0) for j in range (p)] for i in range(n)]
 for i in range(n):
     for j in range(p):
-        r= img[i][j][0]
-        g= img[i][j][1]
-        b= img[i][j][2]
-        image[i][j]=Pixel(r,g,b)
+        px = img[i][j]
+        if(type(px)==type(1)):
+            image[i][j]=Pixel(px,px,px)
+        else:
+            r= px[0]
+            g= px[1]
+            b= px[2]
+            image[i][j]=Pixel(r,g,b)
 
 Img=Image(image)
 
 print(Img.pixels[Img.height-1][Img.width-1])
   
-border=contourPrewitt(Img)
+border=contour(Img)
 mask=binarisation(Img)
 plt.figure()
-plt.imshow(border)
+plt.imshow(border,cmap='gray')
 plt.show()
