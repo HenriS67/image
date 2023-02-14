@@ -39,7 +39,12 @@ class Image:
 
     def __str__(self):
         str = ""
-
+    def hist(self):
+        hist=np.zeros(256)
+        for i in range (self.height):
+            for j in range(self.width):
+                hist[int(self.grey[i][j])]+=1
+        return hist
 #contour
 def contour(Img):
     P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
@@ -107,7 +112,7 @@ def contourCanny(self):
 
             P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
     return P
-    
+
 #binarisation
 def binarisation(Img):
     P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
@@ -119,8 +124,54 @@ def binarisation(Img):
                 P[i][j]=255
     return P
 
+def binarisationOtsu(Img):
+    nbPixels=Img.width*Img.height
+    hist=Img.hist()
+    varianceIntraClasse=np.zeros(256)
+    #proba de chaque niveau de gris
+    #print(hist)
+    #print(sum(hist))
+    proba=hist/nbPixels
+    for i in range(1,256):
 
-img=imageio.imread("Gourds.png").tolist()
+        #proba des classes
+        proba1=proba[0:i+1]
+        #print("i ",i," proba1 :",proba1)
+        proba2=proba[i+1:256]
+        P1=np.sum(proba1)
+        P2=np.sum(proba2)
+        
+        #moy des classes
+        n1=np.arange(i+1)
+        #print("n1 :",n1)
+        n2=np.arange(i+1,256)
+
+        moy1=sum(n1*proba1)/P1
+        moy2=sum(n2*proba2)/P2
+
+        #calcul variances des classes
+        var1=sum((n1-moy1)*(n1-moy1)*proba1)
+        var2=sum((n2-moy2)*(n2-moy2)*proba2)
+        varianceIntraClasse[i] = var1 + var2
+
+    valMin=varianceIntraClasse[1]
+    indiceMin=1
+    for i in range(1,256):   
+        if valMin>varianceIntraClasse[i]:
+            valMin=varianceIntraClasse[i]
+            indiceMin=i
+
+    print(indiceMin,valMin)
+    P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
+    for i in range (1,Img.height-1):
+        for j in range(1,Img.width-1):
+            if(Img.grey[i][j]>indiceMin):
+                P[i][j]=255
+            else:
+                P[i][j]=0
+    return P
+
+img=imageio.imread("image.jpg").tolist()
 n=len(img)
 p=len(img[0])
 image=[[Pixel(0,0,0) for j in range (p)] for i in range(n)]
@@ -139,8 +190,8 @@ Img=Image(image)
 
 print(Img.pixels[Img.height-1][Img.width-1])
   
-border=contour(Img)
-mask=binarisation(Img)
+#border=contourSobel(Img)
+mask=binarisationOtsu(Img)
 plt.figure()
-plt.imshow(border,cmap='gray')
+plt.imshow(mask,cmap='gray')
 plt.show()
