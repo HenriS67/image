@@ -401,21 +401,37 @@ def rectangulization(Img):
                     carres[P[i][j]][0]=j
                 if(j>carres[P[i][j]][2]):
                     carres[P[i][j]][2]=j 
-    #print(carres)
+
+    #enleve les carrés imbriqués dans d'autres (opti possible (break))
+    tabSimpl=[-1 for i in range(nbPart+1)]
+    for i in range(nbPart+1):
+        tabSimpl[i]=i
+        for j in range(nbPart+1):
+            if(carres[i][0]>carres[j][0] 
+                and carres[i][2]<carres[j][2]
+                and carres[i][1]>carres[j][1]
+                and carres[i][3]<carres[j][3]):
+                tabSimpl[i]=j
+                break
+
     res=[[ [0,0,0] for j in range (Img.width)] for i in range(Img.height)]
     tabColor=[[random.randint(0,255),random.randint(0,255),random.randint(0,255)] for i in range(nbPart+1)]
 
+    #dessins des carrés
     for i in range (1,Img.height-1):
         for j in range(1,Img.width-1):
-            if(P[i][j]!=-1):
-                res[i][j]=tabColor[P[i][j]]
+            if(P[i][j]!=-1 and P[i][j]==tabSimpl[P[i][j]]):
+                res[i][j]=tabColor[tabSimpl[P[i][j]]]
+    """
     for i in range(nbPart+1):
-        for m in range(carres[i][1],carres[i][3]):
-            res[m][carres[i][0]]=[255,0,0]
-            res[m][carres[i][2]]=[255,0,0]
-        for m in range(carres[i][0],carres[i][2]):
-            res[carres[i][1]][m]=[255,0,0]
-            res[carres[i][3]][m]=[255,0,0]
+        if(i in tabSimpl):
+            for m in range(carres[i][1],carres[i][3]):
+                res[m][carres[i][0]]=[255,0,0]
+                res[m][carres[i][2]]=[255,0,0]
+            for m in range(carres[i][0],carres[i][2]):
+                res[carres[i][1]][m]=[255,0,0]
+                res[carres[i][3]][m]=[255,0,0]
+    """
     #print(nbPart)
 
 
