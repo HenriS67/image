@@ -72,10 +72,7 @@ class Image:
         for i in range(min(Img.height,self.height)):
             for j in range(min(Img.width,self.width)):
                 if(Img.pixels[i][j].r!=0 and Img.pixels[i][j].g!=0 and Img.pixels[i][j].b!=0):
-                    img[i][j][0] = Img.pixels[i][j].r
-                    img[i][j][1] = Img.pixels[i][j].g
-                    img[i][j][2] = Img.pixels[i][j].b
-
+                    img[i][j] = [255,0,0]
         #print(img)
         newImg=Image(img)      
         return newImg
@@ -305,19 +302,57 @@ def binarisationOtsu(Img):
                 P[i][j]=0
     return P
 
+#contours -> rectangulization (parcours en profondeur itératif)
+from collections import deque
+def rectangulization(Img):
+    P=[[ -1 for j in range (Img.width)] for i in range(Img.height)]
+    nbPart=-1
+    for i in range (1,Img.height-1):
+        for j in range(1,Img.width-1):
+            if(Img.grey[i][j]!=0 and P[i][j]==-1):
+                nbPart+=1
+                node=(i,j)
+                P[i][j]=nbPart
+                visited = []
+                stack = deque()
+                stack.append(node)
+                while stack:
+                    node = stack.pop()
+                    iA=node[0]
+                    jA=node[1]
+                    P[iA][jA]=nbPart
+                    if node not in visited:
+                        visited.append(node)
+                        unvisited = []
+                        if(Img.grey[iA-1][jA-1]!=0 and (iA-1,jA-1) not in visited):unvisited.append((iA-1,jA-1))
+                        if(Img.grey[iA-1][jA]!=0 and (iA-1,jA) not in visited):unvisited.append((iA-1,jA))
+                        if(Img.grey[iA-1][jA+1]!=0 and (iA-1,jA+1) not in visited):unvisited.append((iA-1,jA+1))
+                        if(Img.grey[iA][jA-1]!=0 and (iA,jA-1) not in visited):unvisited.append((iA,jA-1))
+                        if(Img.grey[iA][jA]!=0 and (iA,jA) not in visited):unvisited.append((iA,jA))
+                        if(Img.grey[iA][jA+1]!=0 and (iA,jA+1) not in visited):unvisited.append((iA,jA+1))
+                        if(Img.grey[iA+1][jA-1]!=0 and (iA+1,jA-1) not in visited):unvisited.append((iA+1,jA-1))
+                        if(Img.grey[iA+1][jA]!=0 and (iA+1,jA) not in visited):unvisited.append((iA+1,jA))
+                        if(Img.grey[iA+1][jA+1]!=0 and (iA+1,jA+1) not in visited):unvisited.append((iA+1,jA+1))
+
+                        stack.extend(unvisited)
+    print(nbPart)
+    return P
 #main
-img=imageio.imread("test.png").tolist()
+img=imageio.imread("image.jpg").tolist()
 
 
 Img=Image(img)
 
 #print(Img.pixels[Img.height-1][Img.width-1])
   
+print("lissage")
 liss=normalize0255(lissage(Img))
 liImg=Image(liss)
+print("binarization")
 mask=binarisationOtsu(liImg)
 bwImg=Image(mask)
 #border=normalize0255(contourSobel(bwImg))
+print("Contour")
 border2=normalize0255(contourCanny(bwImg))
 
 #ctImg=Image(border)
@@ -331,7 +366,7 @@ fig.add_subplot(2, 2, 1)
 # showing image
 end=Img.superBorder(ctImg2)
 
-plt.imshow(img)
+plt.imshow(end.toImg())
 plt.axis('off')
 plt.title("originale")
 
@@ -359,5 +394,7 @@ plt.imshow(ctImg2.grey,cmap='gray')
 plt.axis('off')
 plt.title("contours")
 
+print("Rectangulization")
+rectangulization(ctImg2)
 
 plt.show()
