@@ -1,4 +1,5 @@
 import math
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 import imageio
@@ -32,8 +33,8 @@ class Image:
         for i in range(n):
             for j in range(p):
                 px = img[i][j]
-                if(type(px)==type(1)):
-                    self.pixels[i][j]=Pixel(px,px,px)
+                if(type(px)==type(1) or type(px)==type(1.0)):
+                    self.pixels[i][j]=Pixel(int(px),int(px),int(px))
                 else:
                     r= px[0]
                     g= px[1]
@@ -241,6 +242,16 @@ def contourCanny(Img):
                 P[i][j]=255
             else:
                 P[i][j]=0
+
+    """
+    #ajout extreme de l'image comme contour
+    for i in range (Img.height):
+        P[i][0]
+        P[i][Img.width-1]
+    for j in range(Img.width): 
+        P[0][j]
+        P[Img.height-1][j]
+"""
     return P
 
 
@@ -302,11 +313,51 @@ def binarisationOtsu(Img):
                 P[i][j]=0
     return P
 
+#decalage de 1 px pour les parties collées aux extremités
+def recadrage(Img):
+    #Traitement Image : ajout pixel à l'extreme dezl'image comme contour
+
+    P=[[ 0 for j in range (Img.width+2)] for i in range(Img.height+2)]
+
+    #contour blanc
+    for i in range (Img.height+2):
+        P[i][0]=255
+        P[i][Img.width+2-1]=255
+    for j in range(Img.width+2): 
+        P[0][j]=255
+        P[Img.height+2-1][j]=255
+
+    for i in range (1,Img.height+2-1):
+        for j in range(1,Img.width+2-1):
+            P[i][j]=int(Img.grey[i-1][j-1])
+
+    #print(P)
+    return P
+
+def contourBlanc(Img):
+    
+    resImg=Img
+    #contour blanc
+    for i in range (Img.height):
+        resImg.grey[i][0]=255
+        resImg.grey[i][Img.width-1]=255
+        resImg.grey[i][1]=255
+        resImg.grey[i][Img.width-2]=255
+    for j in range(Img.width): 
+        resImg.grey[0][j]=255
+        resImg.grey[Img.height-1][j]=255
+        resImg.grey[1][j]=255
+        resImg.grey[Img.height-2][j]=255
+
+    return resImg.grey
 #contours -> rectangulization (parcours en profondeur itératif)
 from collections import deque
 def rectangulization(Img):
+
     P=[[ -1 for j in range (Img.width)] for i in range(Img.height)]
     nbPart=-1
+
+    #partition des contours
     for i in range (1,Img.height-1):
         for j in range(1,Img.width-1):
             if(Img.grey[i][j]!=0 and P[i][j]==-1):
@@ -335,8 +386,40 @@ def rectangulization(Img):
                         if(Img.grey[iA+1][jA+1]!=0 and (iA+1,jA+1) not in visited):unvisited.append((iA+1,jA+1))
 
                         stack.extend(unvisited)
-    print(nbPart)
-    return P
+
+    #création carre[(x1,y1,x2,y2)] contours des formes
+    carres=[ [Img.width,Img.height,0,0] for j in range (nbPart+1)]
+    for i in range (1,Img.height-1):
+        for j in range(1,Img.width-1):
+            if(P[i][j]!=-1):
+
+                if(i<carres[P[i][j]][1]):
+                    carres[P[i][j]][1]=i
+                if(i>carres[P[i][j]][3]):
+                    carres[P[i][j]][3]=i 
+                if(j<carres[P[i][j]][0]):
+                    carres[P[i][j]][0]=j
+                if(j>carres[P[i][j]][2]):
+                    carres[P[i][j]][2]=j 
+    #print(carres)
+    res=[[ [0,0,0] for j in range (Img.width)] for i in range(Img.height)]
+    tabColor=[[random.randint(0,255),random.randint(0,255),random.randint(0,255)] for i in range(nbPart+1)]
+
+    for i in range (1,Img.height-1):
+        for j in range(1,Img.width-1):
+            if(P[i][j]!=-1):
+                res[i][j]=tabColor[P[i][j]]
+    for i in range(nbPart+1):
+        for m in range(carres[i][1],carres[i][3]):
+            res[m][carres[i][0]]=[255,0,0]
+            res[m][carres[i][2]]=[255,0,0]
+        for m in range(carres[i][0],carres[i][2]):
+            res[carres[i][1]][m]=[255,0,0]
+            res[carres[i][3]][m]=[255,0,0]
+    #print(nbPart)
+
+
+    return res
 #main
 img=imageio.imread("image.jpg").tolist()
 
@@ -352,16 +435,33 @@ print("binarization")
 mask=binarisationOtsu(liImg)
 bwImg=Image(mask)
 #border=normalize0255(contourSobel(bwImg))
+
+print("cadre Blanc")
+recadr=contourBlanc(bwImg)
+reImg=Image(recadr)
+
 print("Contour")
-border2=normalize0255(contourCanny(bwImg))
+border2=normalize0255(contourCanny(reImg))
 
 #ctImg=Image(border)
 ctImg2=Image(border2)
 
 #ctImg.pixels[477][576]=Pixel(255,0,0)
-
+print("Rectangulization")
+imgend=rectangulization(ctImg2)
 fig = plt.figure(figsize=(10, 7))
-fig.add_subplot(2, 2, 1)
+fig.add_subplot(1, 2, 1)
+  
+# showing image
+##end=Img.superBorder(ctImg2)
+
+plt.imshow(img)
+fig.add_subplot(1, 2, 2)
+plt.imshow(imgend)
+
+"""
+fig = plt.figure(figsize=(10, 7))
+fig.add_subplot(3, 3, 1)
   
 # showing image
 end=Img.superBorder(ctImg2)
@@ -371,7 +471,7 @@ plt.axis('off')
 plt.title("originale")
 
 # Adds a subplot at the 2nd position
-fig.add_subplot(2, 2, 2)
+fig.add_subplot(3, 3, 2)
   
 # showing image
 plt.imshow(liImg.grey)
@@ -379,7 +479,7 @@ plt.axis('off')
 plt.title("lissage")
 
 # Adds a subplot at the 2nd position
-fig.add_subplot(2, 2, 3)
+fig.add_subplot(3, 3, 3)
   
 # showing image
 plt.imshow(bwImg.grey,cmap='gray')
@@ -387,14 +487,19 @@ plt.axis('off')
 plt.title("binarisation")
 
 # Adds a subplot at the 2nd position
-fig.add_subplot(2, 2, 4)
+fig.add_subplot(3, 3, 4)
   
 # showing image
 plt.imshow(ctImg2.grey,cmap='gray')
 plt.axis('off')
 plt.title("contours")
 
-print("Rectangulization")
-rectangulization(ctImg2)
 
+fig.add_subplot(3, 3, 5)
+  
+# showing image
+plt.imshow(imgend)
+plt.axis('off')
+plt.title("parts")
+"""
 plt.show()
