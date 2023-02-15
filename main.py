@@ -23,9 +23,6 @@ class Pixel:
         b = self.b + p.b
         return Pixel(r, g, b)
 
-    def noColor(self):
-        return (r + g + b)/3
-
 class Image:
     def __init__(self, img):
 
@@ -60,6 +57,41 @@ class Image:
                 hist[int(self.grey[i][j])]+=1
         return hist
 
+#normalization
+def normalize0255(img):
+    min=np.min(img)
+    max=np.max(img)
+    for i in range (len(img)):
+        for j in range(len(img[0])):
+            img[i][j] = int((img[i][j]/(max-min))*255)
+    return img
+
+#lissage
+def lissage(Img):
+    P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
+    for i in range (2,Img.height-2):
+        for j in range(2,Img.width-2):
+            A = np.array(
+                [
+                 [Img.grey[i-2][j-2],Img.grey[i-2][j-1],Img.grey[i-2][j],Img.grey[i-2][j+1],Img.grey[i-2][j+2]],
+                 [Img.grey[i-1][j-2],Img.grey[i-1][j-1],Img.grey[i-1][j],Img.grey[i-1][j+1],Img.grey[i-1][j+2]],
+                 [Img.grey[i-0][j-2],Img.grey[i-0][j-1],Img.grey[i-0][j],Img.grey[i-0][j+1],Img.grey[i-0][j+2]],
+                 [Img.grey[i+1][j-2],Img.grey[i+1][j-1],Img.grey[i+1][j],Img.grey[i+1][j+1],Img.grey[i+1][j+2]],
+                 [Img.grey[i+2][j-2],Img.grey[i+2][j-1],Img.grey[i+2][j],Img.grey[i+2][j+1],Img.grey[i+2][j+2]]
+                 ]) 
+
+            h = (1/159)*np.array([
+                [2,4,5,4,2],
+                [4,9,12,9,4],
+                [5,12,15,12,5],
+                [4,9,12,9,4],
+                [2,4,5,4,2]
+                ])
+
+            Y = A.dot(h)
+
+            P[i][j] = LA.norm(Y)
+    return P    
 #contour
 def contour(Img):
     P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
@@ -194,10 +226,13 @@ Img=Image(img)
 
 print(Img.pixels[Img.height-1][Img.width-1])
   
-
-mask=binarisationOtsu(Img)
+liss=normalize0255(lissage(Img))
+liImg=Image(liss)
+mask=binarisationOtsu(liImg)
 bwImg=Image(mask)
-border=contourSobel(bwImg)
+border=normalize0255(contourSobel(bwImg))
+ctImg=Image(border)
+
 plt.figure()
-plt.imshow(border,cmap='gray')
+plt.imshow(ctImg.grey,cmap='gray')
 plt.show()
