@@ -1,3 +1,4 @@
+import math
 import matplotlib.pyplot as plt
 import numpy as np
 import imageio
@@ -140,8 +141,11 @@ def contourSobel(Img):
             P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
     return P
 
-def contourCanny(self):
+def contourCanny(Img):
+
+    #contours calcul gradient
     P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
+    theta=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
     for i in range (1,Img.height-1):
         for j in range(1,Img.width-1):
             A = np.array(
@@ -158,6 +162,22 @@ def contourCanny(self):
             Gy = Kgy.dot(A)
 
             P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
+            if(LA.norm(Gx)!=0):
+                theta[i][j] = np.arctan(LA.norm(Gy)/LA.norm(Gx))
+
+    print("theta : ",P[460][574]," : ",theta[460][574])
+    print("theta : ",P[460][573]," : ",theta[460][573])
+    #retirer les non-maxima pour avoir un contour unique
+    for i in range (1,Img.height-1):
+        for j in range(1,Img.width-1):
+            if P[i][j]!=0:
+                cos = math.cos(theta[i][j])
+                sin = math.sin(theta[i][j])
+                g1 = P[i+round(cos)][j+round(sin)]
+                g2 = P[i-round(cos)][j-round(sin)]
+                if (P[i][j]<g1) or (P[i][j]<g2):
+                    P[i][j] = 0
+                          
     return P
 
 #binarisation
@@ -208,7 +228,7 @@ def binarisationOtsu(Img):
             valMin=varianceIntraClasse[i]
             indiceMin=i
 
-    print(indiceMin,valMin)
+    #print(indiceMin,valMin)
     P=[[ 0 for j in range (Img.width)] for i in range(Img.height)]
     for i in range (1,Img.height-1):
         for j in range(1,Img.width-1):
@@ -224,31 +244,34 @@ img=imageio.imread("image.jpg").tolist()
 
 Img=Image(img)
 
-print(Img.pixels[Img.height-1][Img.width-1])
+#print(Img.pixels[Img.height-1][Img.width-1])
   
 liss=normalize0255(lissage(Img))
 liImg=Image(liss)
 mask=binarisationOtsu(liImg)
 bwImg=Image(mask)
 border=normalize0255(contourSobel(bwImg))
+border2=normalize0255(contourCanny(bwImg))
+
 ctImg=Image(border)
+ctImg2=Image(border2)
 
 fig = plt.figure(figsize=(10, 7))
-fig.add_subplot(2, 2, 1)
+fig.add_subplot(1, 2, 1)
   
 # showing image
-plt.imshow(img)
+plt.imshow(ctImg.grey,cmap='gray')
 plt.axis('off')
-plt.title("original")
+plt.title("sobel")
 
 # Adds a subplot at the 2nd position
-fig.add_subplot(2, 2, 2)
+fig.add_subplot(1, 2, 2)
   
 # showing image
-plt.imshow(liImg.grey,cmap='gray')
+plt.imshow(ctImg2.grey,cmap='gray')
 plt.axis('off')
-plt.title("lissage")
-
+plt.title("canny")
+"""
 # Adds a subplot at the 2nd position
 fig.add_subplot(2, 2, 3)
   
@@ -264,4 +287,6 @@ fig.add_subplot(2, 2, 4)
 plt.imshow(ctImg.grey,cmap='gray')
 plt.axis('off')
 plt.title("contours")
+"""
+
 plt.show()
