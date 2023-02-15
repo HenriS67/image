@@ -150,6 +150,15 @@ def contourSobel(Img):
             P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
     return P
 
+#voir s'il y a un trou pour ne pas supprimer en trop (pb des coins)
+def hole(matrix33):
+    res=0
+    for i in range (3):
+      for j in range(3):
+        if(matrix33[i][j]!= 0 and i!=1 and j!=1):
+            res+=1
+    return res<=2
+
 def contourCanny(Img):
 
     #contours calcul gradient
@@ -174,22 +183,57 @@ def contourCanny(Img):
             if(LA.norm(Gx)!=0):
                 theta[i][j] = np.arctan(LA.norm(Gy)/LA.norm(Gx))
     P=normalize0255(P)
-    y=461
-    x=575
+    y=477
+    x=576
     print("x,y ",x,y," theta: ",P[y][x]," : ",theta[y][x])
     print("x,y ",x-1,y," theta: ",P[y][x-1]," : ",theta[y][x-1])
+
+    Ppost=P
     #retirer les non-maxima pour avoir un contour unique
     for i in range (1,Img.height-1):
         for j in range(1,Img.width-1):
             if P[i][j]!=0:
                 cos = math.cos(theta[i][j])
                 sin = math.sin(theta[i][j])
-                g1 = P[i+round(cos)][j+round(sin)]
-                g2 = P[i-round(cos)][j-round(sin)]
-                if (P[i][j]<g1) or (P[i][j]<g2):
+                g1 = P[i+round(sin)][j+round(cos)]
+                g2 = P[i-round(sin)][j-round(cos)]
+                #test
+                """
+                if(i==477 and j==576):
+                    print("g1(x,y) = g1(" , i+math.floor(sin) , ",",j+math.floor(cos),") = ",g1 )
+                    print("g2(x,y) = g2(" , i-math.floor(sin) , ",",j-math.floor(cos),") = ",g2 )
+                """
+
+                #no holes but can be multiple line
+                if ((P[i][j]<=g1) or (P[i][j]<=g2)) and not(sin!=0 and cos!=0):
+                    #neighbour matrix
+                    """
+                    A = np.array(
+                        [
+                        [P[i-1][j-1],P[i-1][j],P[i-1][j+1]],
+                        [P[i][j-1],P[i][j],P[i][j+1]],
+                        [P[i+1][j-1],P[i+1][j],P[i+1][j+1]]
+                        ]) 
+                    if(not hole(A)):
+                        """
                     P[i][j] = 0
-                          
+                
+                #holes but one line
+                """ 
+                if (P[i][j]<g1) or (P[i][j]<g2):
+                    
+                    P[i][j] = 0
+                """   
+
+    #seuillage (binarization)
+    for i in range (1,Img.height-1):
+        for j in range(1,Img.width-1): 
+            if  P[i][j]>90:
+                P[i][j]=255
+            else:
+                P[i][j]=0
     return P
+
 
 #binarisation
 def binarisation(Img):
@@ -267,7 +311,7 @@ border2=normalize0255(contourCanny(bwImg))
 ctImg=Image(border)
 ctImg2=Image(border2)
 
-ctImg.pixels[461][575]=Pixel(255,0,0)
+ctImg.pixels[477][576]=Pixel(255,0,0)
 fig = plt.figure(figsize=(10, 7))
 fig.add_subplot(1, 2, 1)
   
