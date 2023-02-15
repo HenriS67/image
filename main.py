@@ -26,7 +26,6 @@ class Pixel:
 
 class Image:
     def __init__(self, img):
-
         n=len(img)
         p=len(img[0])
         self.pixels=[[Pixel(0,0,0) for j in range (p)] for i in range(n)]
@@ -67,6 +66,19 @@ class Image:
                 img[i][j][2] = self.pixels[i][j].b
         return img
 
+    def superBorder(self,Img):
+        img=self.toImg()
+
+        for i in range(min(Img.height,self.height)):
+            for j in range(min(Img.width,self.width)):
+                if(Img.pixels[i][j].r!=0 and Img.pixels[i][j].g!=0 and Img.pixels[i][j].b!=0):
+                    img[i][j][0] = Img.pixels[i][j].r
+                    img[i][j][1] = Img.pixels[i][j].g
+                    img[i][j][2] = Img.pixels[i][j].b
+
+        #print(img)
+        newImg=Image(img)      
+        return newImg
 #normalization
 def normalize0255(img):
     min=np.min(img)
@@ -183,12 +195,12 @@ def contourCanny(Img):
             if(LA.norm(Gx)!=0):
                 theta[i][j] = np.arctan(LA.norm(Gy)/LA.norm(Gx))
     P=normalize0255(P)
+    """
     y=477
     x=576
     print("x,y ",x,y," theta: ",P[y][x]," : ",theta[y][x])
     print("x,y ",x-1,y," theta: ",P[y][x-1]," : ",theta[y][x-1])
-
-    Ppost=P
+    """
     #retirer les non-maxima pour avoir un contour unique
     for i in range (1,Img.height-1):
         for j in range(1,Img.width-1):
@@ -294,7 +306,7 @@ def binarisationOtsu(Img):
     return P
 
 #main
-img=imageio.imread("image.jpg").tolist()
+img=imageio.imread("test.png").tolist()
 
 
 Img=Image(img)
@@ -305,29 +317,32 @@ liss=normalize0255(lissage(Img))
 liImg=Image(liss)
 mask=binarisationOtsu(liImg)
 bwImg=Image(mask)
-border=normalize0255(contourSobel(bwImg))
+#border=normalize0255(contourSobel(bwImg))
 border2=normalize0255(contourCanny(bwImg))
 
-ctImg=Image(border)
+#ctImg=Image(border)
 ctImg2=Image(border2)
 
-ctImg.pixels[477][576]=Pixel(255,0,0)
+#ctImg.pixels[477][576]=Pixel(255,0,0)
+
 fig = plt.figure(figsize=(10, 7))
-fig.add_subplot(1, 2, 1)
+fig.add_subplot(2, 2, 1)
   
 # showing image
-plt.imshow(ctImg.toImg())
+end=Img.superBorder(ctImg2)
+
+plt.imshow(img)
 plt.axis('off')
-plt.title("sobel")
+plt.title("originale")
 
 # Adds a subplot at the 2nd position
-fig.add_subplot(1, 2, 2)
+fig.add_subplot(2, 2, 2)
   
 # showing image
-plt.imshow(ctImg2.toImg())
+plt.imshow(liImg.grey)
 plt.axis('off')
-plt.title("canny")
-"""
+plt.title("lissage")
+
 # Adds a subplot at the 2nd position
 fig.add_subplot(2, 2, 3)
   
@@ -340,9 +355,9 @@ plt.title("binarisation")
 fig.add_subplot(2, 2, 4)
   
 # showing image
-plt.imshow(ctImg.grey,cmap='gray')
+plt.imshow(ctImg2.grey,cmap='gray')
 plt.axis('off')
 plt.title("contours")
-"""
+
 
 plt.show()
