@@ -233,6 +233,35 @@ bwImg=Image(mask)
 border=normalize0255(contourSobel(bwImg))
 ctImg=Image(border)
 
-plt.figure()
+fig = plt.figure(figsize=(10, 7))
+fig.add_subplot(2, 2, 1)
+  
+# showing image
+plt.imshow(img)
+plt.axis('off')
+plt.title("original")
+
+# Adds a subplot at the 2nd position
+fig.add_subplot(2, 2, 2)
+  
+# showing image
+plt.imshow(liImg.grey,cmap='gray')
+plt.axis('off')
+plt.title("lissage")
+
+# Adds a subplot at the 2nd position
+fig.add_subplot(2, 2, 3)
+  
+# showing image
+plt.imshow(bwImg.grey,cmap='gray')
+plt.axis('off')
+plt.title("binarisation")
+
+# Adds a subplot at the 2nd position
+fig.add_subplot(2, 2, 4)
+  
+# showing image
 plt.imshow(ctImg.grey,cmap='gray')
+plt.axis('off')
+plt.title("contours")
 plt.show()
