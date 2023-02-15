@@ -58,6 +58,15 @@ class Image:
                 hist[int(self.grey[i][j])]+=1
         return hist
 
+    def toImg(self):
+        img=[[[0,0,0] for j in range (self.width)] for i in range(self.height)]
+        for i in range(self.height):
+            for j in range(self.width):
+                img[i][j][0] = self.pixels[i][j].r
+                img[i][j][1] = self.pixels[i][j].g
+                img[i][j][2] = self.pixels[i][j].b
+        return img
+
 #normalization
 def normalize0255(img):
     min=np.min(img)
@@ -164,9 +173,11 @@ def contourCanny(Img):
             P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
             if(LA.norm(Gx)!=0):
                 theta[i][j] = np.arctan(LA.norm(Gy)/LA.norm(Gx))
-
-    print("theta : ",P[460][574]," : ",theta[460][574])
-    print("theta : ",P[460][573]," : ",theta[460][573])
+    P=normalize0255(P)
+    y=461
+    x=575
+    print("x,y ",x,y," theta: ",P[y][x]," : ",theta[y][x])
+    print("x,y ",x-1,y," theta: ",P[y][x-1]," : ",theta[y][x-1])
     #retirer les non-maxima pour avoir un contour unique
     for i in range (1,Img.height-1):
         for j in range(1,Img.width-1):
@@ -256,11 +267,12 @@ border2=normalize0255(contourCanny(bwImg))
 ctImg=Image(border)
 ctImg2=Image(border2)
 
+ctImg.pixels[461][575]=Pixel(255,0,0)
 fig = plt.figure(figsize=(10, 7))
 fig.add_subplot(1, 2, 1)
   
 # showing image
-plt.imshow(ctImg.grey,cmap='gray')
+plt.imshow(ctImg.toImg())
 plt.axis('off')
 plt.title("sobel")
 
@@ -268,7 +280,7 @@ plt.title("sobel")
 fig.add_subplot(1, 2, 2)
   
 # showing image
-plt.imshow(ctImg2.grey,cmap='gray')
+plt.imshow(ctImg2.toImg())
 plt.axis('off')
 plt.title("canny")
 """
