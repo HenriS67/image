@@ -338,16 +338,17 @@ def contourBlanc(Img):
     
     resImg=Img
     #contour blanc
+    noirOuBlanc = round(np.average(resImg.grey)/255)*255
     for i in range (Img.height):
-        resImg.grey[i][0]=255
-        resImg.grey[i][Img.width-1]=255
-        resImg.grey[i][1]=255
-        resImg.grey[i][Img.width-2]=255
+        resImg.grey[i][0]=noirOuBlanc
+        resImg.grey[i][Img.width-1]=noirOuBlanc
+        resImg.grey[i][1]=noirOuBlanc
+        resImg.grey[i][Img.width-2]=noirOuBlanc
     for j in range(Img.width): 
-        resImg.grey[0][j]=255
-        resImg.grey[Img.height-1][j]=255
-        resImg.grey[1][j]=255
-        resImg.grey[Img.height-2][j]=255
+        resImg.grey[0][j]=noirOuBlanc
+        resImg.grey[Img.height-1][j]=noirOuBlanc
+        resImg.grey[1][j]=noirOuBlanc
+        resImg.grey[Img.height-2][j]=noirOuBlanc
 
     return resImg.grey
 #contours -> rectangulization (parcours en profondeur itératif)
@@ -422,7 +423,7 @@ def rectangulization(Img):
         for j in range(1,Img.width-1):
             if(P[i][j]!=-1 and P[i][j]==tabSimpl[P[i][j]]):
                 res[i][j]=tabColor[tabSimpl[P[i][j]]]
-    """
+    
     for i in range(nbPart+1):
         if(i in tabSimpl):
             for m in range(carres[i][1],carres[i][3]):
@@ -431,13 +432,13 @@ def rectangulization(Img):
             for m in range(carres[i][0],carres[i][2]):
                 res[carres[i][1]][m]=[255,0,0]
                 res[carres[i][3]][m]=[255,0,0]
-    """
+    
     #print(nbPart)
 
 
     return res
 #main
-img=imageio.imread("image.jpg").tolist()
+img=imageio.imread("famille.jpg").tolist()
 
 
 Img=Image(img)
