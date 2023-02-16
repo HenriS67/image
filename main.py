@@ -415,6 +415,62 @@ def rectangulization(Img):
                 tabSimpl[i]=j
                 break
 
+    #remplissage (on rempli le carré s'il est isolé, on rempli le contour si conflits entre carrés):
+    #((X,Y),(A,B)) and ((X1,Y1),(A1,B1)) if (A<X1 or A1<X or B<Y1 or B1<Y):
+    # = > Intersection = Empty
+    for i in range(nbPart+1):
+        if(i in tabSimpl):
+            condiI=True
+            for j in range(nbPart+1):
+                if(j in tabSimpl):
+                    if not (carres[i][2]<carres[j][0] or 
+                        carres[j][2]<carres[i][0] or 
+                        carres[i][3]<carres[j][1] or
+                        carres[j][3]<carres[i][1]) and i!=j:
+                        condiI = False
+                        #print(i,j)
+                        break
+
+        #si aucune intersection (rectangle isolé), forme = rectangle
+        if condiI:
+            for m in range(carres[i][1],carres[i][3]):
+                for l in range(carres[i][0],carres[i][2]):
+                    P[m][l]=tabSimpl[i]
+
+        #sinon on prend le contour (fermé)
+        else:
+            #méthode appartenance à un contour ( nb intesection)
+            """
+            for m in range(carres[i][1],carres[i][3]+1):
+                nbCrois=0
+                tabIn=[]
+                for l in range(carres[i][0],carres[i][2]+1):
+                    if(P[m][l]==tabSimpl[i] and P[m][l+1]==-1):
+                        nbCrois+=1
+                        if(nbCrois%2==0):
+                            for o in range(len(tabIn)):
+                                P[tabIn[o][0]][tabIn[o][1]]=tabSimpl[i]
+                            tabIn=[]
+                    if (not (nbCrois%2==0)):
+                        tabIn.append((m,l))
+                    if(m,l)==(38,501):
+                        print(nbCrois)
+                        print(P[m][l-1],P[m][l],P[m][l+1])
+                        print(tabIn)
+            """   
+            #méthode min-max par ligne (plus large)
+            for m in range(carres[i][1],carres[i][3]+1):
+                min=carres[i][2]+1
+                max=carres[i][0]
+                for l in range(carres[i][0],carres[i][2]+1):
+                    if(P[m][l]==tabSimpl[i]):
+                        if(l>max):
+                            max=l
+                        if(l<min):
+                            min=l
+                for l in range(min,max):
+                    P[m][l]=   tabSimpl[i]               
+
     res=[[ [0,0,0] for j in range (Img.width)] for i in range(Img.height)]
     tabColor=[[random.randint(0,255),random.randint(0,255),random.randint(0,255)] for i in range(nbPart+1)]
 
@@ -438,7 +494,7 @@ def rectangulization(Img):
 
     return res
 #main
-img=imageio.imread("famille.jpg").tolist()
+img=imageio.imread("image.jpg").tolist()
 
 
 Img=Image(img)
