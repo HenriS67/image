@@ -189,9 +189,11 @@ def contourCanny(Img):
             Gx = Kgx.dot(A)
             Gy = Kgy.dot(A)
 
-            P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
             if(LA.norm(Gx)!=0):
                 theta[i][j] = np.arctan(LA.norm(Gy)/LA.norm(Gx))
+
+            P[i][j] = LA.norm(Gx.dot(Gx) + Gy.dot(Gy))
+
     P=normalize0255(P)
     """
     y=477
@@ -409,10 +411,10 @@ def rectangulization(Img):
     for i in range(nbPart+1):
         tabSimpl[i]=i
         for j in range(nbPart+1):
-            if(carres[i][0]>carres[j][0] 
-                and carres[i][2]<carres[j][2]
-                and carres[i][1]>carres[j][1]
-                and carres[i][3]<carres[j][3]):
+            if(carres[i][0]>=carres[j][0] 
+                and carres[i][2]<=carres[j][2]
+                and carres[i][1]>=carres[j][1]
+                and carres[i][3]<=carres[j][3]):
                 tabSimpl[i]=j
                 break
 
@@ -420,7 +422,7 @@ def rectangulization(Img):
     #((X,Y),(A,B)) and ((X1,Y1),(A1,B1)) if (A<X1 or A1<X or B<Y1 or B1<Y):
     # = > Intersection = Empty
     for i in range(nbPart+1):
-        """
+
         if(i in tabSimpl):
             condiI=True
             for j in range(nbPart+1):
@@ -438,12 +440,12 @@ def rectangulization(Img):
             for m in range(carres[i][1],carres[i][3]):
                 for l in range(carres[i][0],carres[i][2]):
                     P[m][l]=tabSimpl[i]
-
+        
         #sinon on prend le contour (fermé)
         else:
             #méthode appartenance à un contour ( nb intesection)
             """
-        """
+        
             for m in range(carres[i][1],carres[i][3]+1):
                 nbCrois=0
                 tabIn=[]
@@ -500,7 +502,7 @@ def rectangulization(Img):
 
     return res
 #main
-img=imageio.imread("test4.jpg").tolist()
+img=imageio.imread("gg.jpg").tolist()
 
 
 Img=Image(img)
