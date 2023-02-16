@@ -1,1 +1,0 @@
-ctImg.pixels[461][575]=Pixel(255,0,0)

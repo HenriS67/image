@@ -338,7 +338,8 @@ def contourBlanc(Img):
     
     resImg=Img
     #contour blanc
-    noirOuBlanc = round(np.average(resImg.grey)/255)*255
+    noirOuBlanc = round((np.average(resImg.grey)+30)/255)*255
+    print(np.average(resImg.grey))
     for i in range (Img.height):
         resImg.grey[i][0]=noirOuBlanc
         resImg.grey[i][Img.width-1]=noirOuBlanc
@@ -419,6 +420,7 @@ def rectangulization(Img):
     #((X,Y),(A,B)) and ((X1,Y1),(A1,B1)) if (A<X1 or A1<X or B<Y1 or B1<Y):
     # = > Intersection = Empty
     for i in range(nbPart+1):
+        """
         if(i in tabSimpl):
             condiI=True
             for j in range(nbPart+1):
@@ -441,6 +443,7 @@ def rectangulization(Img):
         else:
             #méthode appartenance à un contour ( nb intesection)
             """
+        """
             for m in range(carres[i][1],carres[i][3]+1):
                 nbCrois=0
                 tabIn=[]
@@ -459,7 +462,7 @@ def rectangulization(Img):
                         print(tabIn)
             """   
             #méthode min-max par ligne (plus large)
-            for m in range(carres[i][1],carres[i][3]+1):
+        for m in range(carres[i][1],carres[i][3]+1):
                 min=carres[i][2]+1
                 max=carres[i][0]
                 for l in range(carres[i][0],carres[i][2]+1):
@@ -475,11 +478,13 @@ def rectangulization(Img):
     tabColor=[[random.randint(0,255),random.randint(0,255),random.randint(0,255)] for i in range(nbPart+1)]
 
     #dessins des carrés
+    
     for i in range (1,Img.height-1):
         for j in range(1,Img.width-1):
             if(P[i][j]!=-1 and P[i][j]==tabSimpl[P[i][j]]):
                 res[i][j]=tabColor[tabSimpl[P[i][j]]]
     
+    """
     for i in range(nbPart+1):
         if(i in tabSimpl):
             for m in range(carres[i][1],carres[i][3]):
@@ -488,13 +493,14 @@ def rectangulization(Img):
             for m in range(carres[i][0],carres[i][2]):
                 res[carres[i][1]][m]=[255,0,0]
                 res[carres[i][3]][m]=[255,0,0]
-    
+    """
+
     #print(nbPart)
 
 
     return res
 #main
-img=imageio.imread("image.jpg").tolist()
+img=imageio.imread("test4.jpg").tolist()
 
 
 Img=Image(img)
@@ -532,7 +538,7 @@ plt.imshow(img)
 fig.add_subplot(1, 2, 2)
 plt.imshow(imgend)
 
-"""
+
 fig = plt.figure(figsize=(10, 7))
 fig.add_subplot(3, 3, 1)
   
@@ -574,5 +580,5 @@ fig.add_subplot(3, 3, 5)
 plt.imshow(imgend)
 plt.axis('off')
 plt.title("parts")
-"""
+
 plt.show()
