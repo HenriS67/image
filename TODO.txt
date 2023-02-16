@@ -1,4 +1,10 @@
-Segmentation :
+Segmentation faites (pas mieux)
+fin de la partie de recherche
 
-binarisation : méthode d'oTSU
-Contours : filtre de Sobel/canny
+
+ensuite (partie pratique) : 
+    pour toutes les parties de l'iamge: 
+    créer une image que pour cette parties
+    remplir un tableau des parties
+    le trier par taille de l'image
+    enregistrer les images triees dans un fichier
